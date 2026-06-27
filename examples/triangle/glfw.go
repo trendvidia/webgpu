@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cogentcore/webgpu/wgpuglfw"
+	"github.com/trendvidia/webgpu/wgpuglfw"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 

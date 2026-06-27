@@ -8,9 +8,9 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/cogentcore/webgpu/examples/internal/glm"
-	"github.com/cogentcore/webgpu/wgpu"
-	"github.com/cogentcore/webgpu/wgpuglfw"
+	"github.com/trendvidia/webgpu/examples/internal/glm"
+	"github.com/trendvidia/webgpu/wgpu"
+	"github.com/trendvidia/webgpu/wgpuglfw"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	_ "embed"

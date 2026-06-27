@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cogentcore/webgpu/wgpu"
+	"github.com/trendvidia/webgpu/wgpu"
 )
 
 func main() {

@@ -79,6 +79,24 @@ func (g RenderPassEncoder) DrawIndexed(indexCount uint32, instanceCount uint32, 
 	g.jsValue.Call("drawIndexed", params...)
 }
 
+// SetScissorRect as described:
+// https://gpuweb.github.io/gpuweb/#dom-gpurenderpassencoder-setscissorrect
+//
+// (trendvidia: added for the WebGPU backend's clipping path on wasm; the
+// upstream js binding omits it while the native binding has it.)
+func (g RenderPassEncoder) SetScissorRect(x, y, width, height uint32) {
+	g.jsValue.Call("setScissorRect", x, y, width, height)
+}
+
+// SetStencilReference as described:
+// https://gpuweb.github.io/gpuweb/#dom-gpurenderpassencoder-setstencilreference
+//
+// (trendvidia: added for the WebGPU backend's stencil-clip path on wasm; the
+// upstream js binding omits it while the native binding has it.)
+func (g RenderPassEncoder) SetStencilReference(reference uint32) {
+	g.jsValue.Call("setStencilReference", reference)
+}
+
 // End as described:
 // https://gpuweb.github.io/gpuweb/#dom-gpurenderpassencoder-end
 func (g RenderPassEncoder) End() error {

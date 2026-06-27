@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"syscall/js"
 
-	"github.com/cogentcore/webgpu/jsx"
+	"github.com/trendvidia/webgpu/jsx"
 )
 
 // Adapter as described:
