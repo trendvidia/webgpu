@@ -174,18 +174,27 @@ func (g *RenderPassColorAttachment) toJS() any {
 }
 
 func (g *RenderPassDepthStencilAttachment) toJS() any {
-	return map[string]any{
-		"view":            pointerToJS(g.View),
-		"depthLoadOp":     enumToJS(g.DepthLoadOp),
-		"depthStoreOp":    enumToJS(g.DepthStoreOp),
-		"depthClearValue": g.DepthClearValue,
-		"depthReadOnly":   g.DepthReadOnly,
-		// TODO(kai): these cause errors if passed
-		// "stencilLoadOp":     enumToJS(g.StencilLoadOp),
-		// "stencilStoreOp":    enumToJS(g.StencilStoreOp),
+	m := map[string]any{
+		"view":              pointerToJS(g.View),
+		"depthLoadOp":       enumToJS(g.DepthLoadOp),
+		"depthStoreOp":      enumToJS(g.DepthStoreOp),
+		"depthClearValue":   g.DepthClearValue,
+		"depthReadOnly":     g.DepthReadOnly,
 		"stencilClearValue": g.StencilClearValue,
 		"stencilReadOnly":   g.StencilReadOnly,
 	}
+	// (trendvidia) Emit the stencil load/store ops only when set. A stencil-aspect
+	// format (e.g. Depth24PlusStencil8) REQUIRES them under strict (browser/Dawn)
+	// validation, while a depth-only format REJECTS them — so passing them
+	// unconditionally broke depth-only callers (the reason upstream commented
+	// them out). The zero value (LoadOp/StoreOp "Undefined") means unset.
+	if g.StencilLoadOp != LoadOpUndefined {
+		m["stencilLoadOp"] = enumToJS(g.StencilLoadOp)
+	}
+	if g.StencilStoreOp != StoreOpUndefined {
+		m["stencilStoreOp"] = enumToJS(g.StencilStoreOp)
+	}
+	return m
 }
 
 func (g *RenderPipelineDescriptor) toJS() any {
