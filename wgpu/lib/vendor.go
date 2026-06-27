@@ -12,6 +12,7 @@ import (
 	_ "github.com/trendvidia/webgpu/wgpu/lib/darwin/arm64"
 	_ "github.com/trendvidia/webgpu/wgpu/lib/ios/amd64"
 	_ "github.com/trendvidia/webgpu/wgpu/lib/ios/arm64"
+	_ "github.com/trendvidia/webgpu/wgpu/lib/iossimulator/arm64"
 	_ "github.com/trendvidia/webgpu/wgpu/lib/linux/amd64"
 	_ "github.com/trendvidia/webgpu/wgpu/lib/linux/arm64"
 	_ "github.com/trendvidia/webgpu/wgpu/lib/windows/amd64"

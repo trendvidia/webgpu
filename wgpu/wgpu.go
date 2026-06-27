@@ -18,9 +18,12 @@ package wgpu
 
 #cgo linux,!android LDFLAGS: -lm -ldl
 
-// iOS
+// iOS. arm64 is a device slice by default; pass the `iossimulator` build tag for
+// an arm64 Simulator build (Apple Silicon), which links the simulator slice.
+// amd64 iOS is always the (Intel) Simulator. (trendvidia: iOS Simulator support.)
 #cgo ios,amd64 LDFLAGS: -L${SRCDIR}/lib/ios/amd64 -lwgpu_native
-#cgo ios,arm64 LDFLAGS: -L${SRCDIR}/lib/ios/arm64 -lwgpu_native
+#cgo ios,arm64,!iossimulator LDFLAGS: -L${SRCDIR}/lib/ios/arm64 -lwgpu_native
+#cgo ios,arm64,iossimulator LDFLAGS: -L${SRCDIR}/lib/iossimulator/arm64 -lwgpu_native
 
 // Darwin
 #cgo darwin,!ios,amd64 LDFLAGS: -L${SRCDIR}/lib/darwin/amd64 -lwgpu_native
