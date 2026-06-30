@@ -7,17 +7,38 @@ package jsx
 import (
 	"log/slog"
 	"syscall/js"
-	"unsafe"
 )
 
-// BytesToJS converts the given bytes to a js Uint8ClampedArray
-// by using the global wasm memory bytes. This avoids the
-// copying present in [js.CopyBytesToJS].
+// uint8ArrayCtor caches the Uint8Array constructor so BytesToJS does not
+// re-resolve it on every call. The constructor object is never detached.
+var uint8ArrayCtor = js.Global().Get("Uint8Array")
+
+// BytesToJS copies the given bytes into a freshly allocated, JS-owned
+// Uint8Array and returns it.
+//
+// It deliberately does NOT construct a zero-copy typed-array view over the Go
+// wasm linear memory (globalThis.wasm.instance.exports.mem.buffer). Such a view
+// aliases the heap's backing ArrayBuffer, which the Go runtime DETACHES whenever
+// it grows linear memory (memory.grow). A grow can land at any time a Go
+// allocation happens — including inside syscall/js's own makeArgs while
+// marshalling the constructor arguments, or in the makeArgs of the outer
+// queue.writeBuffer/writeTexture Call that consumes the view — leaving the
+// view pointing at a detached buffer and throwing
+// "Cannot perform Construct on a detached ArrayBuffer" (trendvidia/fyne#347).
+// Reading mem.buffer "fresh" does not help, because the detach happens between
+// the fresh read and the construction/consumption.
+//
+// Copying via js.CopyBytesToJS sidesteps this entirely: the host copy reads
+// mem.buffer atomically with no interleaved Go allocation, and the returned
+// array is backed by its own JS ArrayBuffer, so a later memory.grow cannot
+// detach it. The result is consumed synchronously by writeBuffer/writeTexture,
+// so the extra copy is short-lived.
 func BytesToJS(b []byte) js.Value {
-	ptr := uintptr(unsafe.Pointer(&b[0]))
-	// We directly pass the offset and length to the constructor to avoid calling subarray or slice,
-	// thereby improving performance and safety (this fixes a detached array buffer crash).
-	return js.Global().Get("Uint8ClampedArray").New(js.Global().Get("wasm").Get("instance").Get("exports").Get("mem").Get("buffer"), ptr, len(b))
+	dst := uint8ArrayCtor.New(len(b))
+	if len(b) > 0 {
+		js.CopyBytesToJS(dst, b)
+	}
+	return dst
 }
 
 // Await is a helper function equivalent to await in JS.
