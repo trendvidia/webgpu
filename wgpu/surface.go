@@ -136,8 +136,7 @@ func (p *Surface) GetCurrentTexture() (*Texture, error) {
 		if ref != nil {
 			C.wgpuTextureRelease(ref)
 		}
-		return nil, errors.New("wgpu.(*Surface).GetCurrentTexture(): no current texture (status " +
-			SurfaceGetCurrentTextureStatus(status).String() + "; surface needs reconfigure)")
+		return nil, &SurfaceStatusError{Status: SurfaceGetCurrentTextureStatus(status)}
 	}
 
 	return &Texture{p.deviceRef, ref}, nil

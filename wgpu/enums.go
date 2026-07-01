@@ -1320,6 +1320,20 @@ func (v SurfaceGetCurrentTextureStatus) String() string {
 	}
 }
 
+// SurfaceStatusError reports a non-Success surface acquisition status from
+// Surface.GetCurrentTexture, so callers can switch on the concrete Status
+// (reconfigure on Outdated, skip on Timeout, propagate on Lost/OutOfMemory/
+// DeviceLost) via errors.As rather than parsing a string. Defined here (an
+// untagged file) so the type is visible to both the native and the js/wasm build.
+type SurfaceStatusError struct {
+	Status SurfaceGetCurrentTextureStatus
+}
+
+func (e *SurfaceStatusError) Error() string {
+	return "wgpu.(*Surface).GetCurrentTexture(): no current texture (status " +
+		e.Status.String() + "; surface needs reconfigure)"
+}
+
 type TextureAspect uint32
 
 const (
