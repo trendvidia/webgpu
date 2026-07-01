@@ -9,11 +9,14 @@ package wgpu
 
 extern void gowebgpu_error_callback_c(WGPUErrorType type, char const * message, void * userdata);
 
-static inline WGPUTexture gowebgpu_surface_get_current_texture(WGPUSurface surface, WGPUDevice device, void * error_userdata) {
+static inline WGPUTexture gowebgpu_surface_get_current_texture(WGPUSurface surface, WGPUDevice device, WGPUSurfaceGetCurrentTextureStatus * status_out, void * error_userdata) {
 	WGPUSurfaceTexture ref;
 	wgpuDevicePushErrorScope(device, WGPUErrorFilter_Validation);
 	wgpuSurfaceGetCurrentTexture(surface, &ref);
 	wgpuDevicePopErrorScope(device, gowebgpu_error_callback_c, error_userdata);
+	if (status_out != NULL) {
+		*status_out = ref.status;
+	}
 	return ref.texture;
 }
 
@@ -111,9 +114,11 @@ func (p *Surface) GetCurrentTexture() (*Texture, error) {
 	errorCallbackHandle := cgo.NewHandle(cb)
 	defer errorCallbackHandle.Delete()
 
+	var status C.WGPUSurfaceGetCurrentTextureStatus
 	ref := C.gowebgpu_surface_get_current_texture(
 		p.ref,
 		p.deviceRef,
+		&status,
 		unsafe.Pointer(&errorCallbackHandle),
 	)
 	if err != nil {
@@ -121,6 +126,18 @@ func (p *Surface) GetCurrentTexture() (*Texture, error) {
 			C.wgpuTextureRelease(ref)
 		}
 		return nil, err
+	}
+
+	// A non-Success status (Timeout/Outdated/Lost/OutOfMemory/DeviceLost) leaves the
+	// texture null. Wrapping and using it would trap in wgpu-native as "invalid
+	// texture" (an abort, not a Go panic — unrecoverable). Report it so the caller
+	// can skip the frame and/or reconfigure the surface instead.
+	if ref == nil || SurfaceGetCurrentTextureStatus(status) != SurfaceGetCurrentTextureStatusSuccess {
+		if ref != nil {
+			C.wgpuTextureRelease(ref)
+		}
+		return nil, errors.New("wgpu.(*Surface).GetCurrentTexture(): no current texture (status " +
+			SurfaceGetCurrentTextureStatus(status).String() + "; surface needs reconfigure)")
 	}
 
 	return &Texture{p.deviceRef, ref}, nil
