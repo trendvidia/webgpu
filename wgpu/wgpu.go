@@ -35,7 +35,7 @@ package wgpu
 #cgo windows,amd64 LDFLAGS: -L${SRCDIR}/lib/windows/amd64 -lwgpu_native
 #cgo windows,arm64 LDFLAGS: -L${SRCDIR}/lib/windows/arm64 -lwgpu_native
 
-#cgo windows LDFLAGS: -lopengl32 -lgdi32 -ld3dcompiler_47 -lws2_32 -luserenv -lbcrypt -lntdll
+#cgo windows LDFLAGS: -lopengl32 -lgdi32 -ld3dcompiler_47 -lws2_32 -luserenv -lbcrypt -lntdll -lole32 -loleaut32
 
 #include <stdio.h>
 #include "./lib/wgpu.h"
